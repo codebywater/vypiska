@@ -155,3 +155,10 @@ test("«Детали операции» — описание", () => {
   const r = V.parse("Дата;Сумма;Детали операции\n01.03.2026;-100;COFIX\n");
   assert.equal(r.ops[0].description, "COFIX");
 });
+
+test("line — номер строки в исходном файле, с преамбулой и многострочными ячейками", () => {
+  assert.deepEqual(V.parse(fixture("vtb.csv")).ops.map((o) => o.line), [12, 13]);
+  assert.deepEqual(V.parse(fixture("business-1c.csv")).ops.map((o) => o.line), [3, 5, 6]);
+  const r = V.parse('Дата;Сумма;Описание\n\n01.03.2026;-1;"А\nБ"\n02.03.2026;-2;В\n');
+  assert.deepEqual(r.ops.map((o) => o.line), [3, 5]);
+});

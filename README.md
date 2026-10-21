@@ -4,11 +4,11 @@
 ![license](https://img.shields.io/badge/license-MIT-blue)
 ![dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)
 
-**Разбор CSV-выписок российских банков в единый список операций.** Сбербанк, Т-Банк, Альфа-Банк, ВТБ, бизнес-выписки в стиле 1С и любой CSV с датой и суммой. Один файл на JavaScript, без зависимостей, работает в браузере и в Node.
+**Разбор CSV-выписок российских банков в единый список операций.** Сбербанк, Т-Банк, Альфа-Банк, ВТБ, бизнес-выписки в стиле 1С и любой CSV с датой и суммой. Один файл на JavaScript, без зависимостей, работает в браузере и в Node; такой же один файл на Python.
 
 ### 👉 [Проверить на своей выписке](https://codebywater.github.io/vypiska/) — файл не покидает браузер
 
-> **English summary.** A zero-dependency JavaScript parser that turns CSV bank statements from Russian banks (Sber, T-Bank, Alfa-Bank, VTB, 1C-style business exports) into one normalized list of transactions. Detects the header, delimiter, encoding (UTF-8 / Windows-1251), amount columns in account currency, failed operations, and counts every skipped row instead of dropping it silently.
+> **English summary.** A zero-dependency parser for JavaScript and Python (one file each, identical output) that turns CSV bank statements from Russian banks (Sber, T-Bank, Alfa-Bank, VTB, 1C-style business exports) into one normalized list of transactions. Detects the header, delimiter, encoding (UTF-8 / Windows-1251), amount columns in account currency, failed operations, and counts every skipped row instead of dropping it silently.
 
 ## Зачем
 
@@ -42,6 +42,37 @@ console.log(columns);  // { date: "Дата операции", amount: "Сумм
 ```js
 const { ops, stats, files } = Vypiska.parseMany([sberText, tbankText]);   // ops отсортированы, у каждой есть file
 ```
+
+## Python
+
+[vypiska.py](vypiska.py) — та же библиотека на Python 3.9+, тоже один файл без зависимостей. Названия функций в стиле Python, а результат такой же, как у JavaScript-версии: те же ключи (`badDate`, `dateOrder` и т. д.), даты, суммы и сообщения об ошибках.
+
+```python
+import vypiska
+
+with open("tbank.csv", "rb") as f:
+    text = vypiska.decode(f.read())             # UTF-8 или Windows-1251
+result = vypiska.parse(text)                    # include_failed=True, include_foreign=True — как опции в JS
+
+print(result["ops"][0])
+# {'date': '2026-03-18', 'time': '21:15', 'amount': -1250, 'currency': 'RUB',
+#  'description': 'Пятёрочка', 'counterparty': '', 'category': 'Супермаркеты',
+#  'mcc': '5411', 'status': 'OK', 'line': 3}
+print(result["stats"])
+# {'rows': 4, 'ops': 3, 'badDate': 0, 'badAmount': 0, 'failed': 1, 'zero': 0, 'foreign': 0, 'dateOrder': 'dmy'}
+print(result["columns"])
+# {'date': 'Дата операции', 'amount': 'Сумма платежа', 'currency': 'Валюта платежа', 'status': 'Статус', ...}
+```
+
+| JavaScript | Python |
+|---|---|
+| `parse(text, { includeFailed, includeForeign })` | `parse(text, include_failed=False, include_foreign=False)` → `dict` |
+| `parseMany(texts, opts)` | `parse_many(texts, include_failed=False, include_foreign=False)` |
+| `decode(bytes)` | `decode(data: bytes)` |
+| `parseAmount(s)`, `parseDate(s, order)` | `parse_amount(s)`, `parse_date(s, order="dmy")` |
+| `throw new Error(…)` | `raise ValueError(…)` с тем же текстом |
+
+Суммы — числа, как в JSON у JavaScript-версии: `-1250`, `-1250.3`. Совпадение двух версий проверяется тестами: [test/test_vypiska.py](test/test_vypiska.py) запускает `vypiska.js` и `vypiska.py` на фикстурах и на сотнях случайных выписок и требует одинаковый JSON.
 
 ## Что учитывается
 
@@ -83,13 +114,16 @@ npm install github:codebywater/vypiska
 ```
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/codebywater/vypiska@v1.0.2/vypiska.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/codebywater/vypiska@v1.1.0/vypiska.js"></script>
 ```
+
+Python-версия тоже не публикуется пакетом: скопируйте [vypiska.py](vypiska.py) рядом со своим кодом и сделайте `import vypiska`.
 
 ## Разработка
 
 ```bash
-npm test     # тесты на встроенном node:test, без зависимостей
+npm test                                              # тесты на встроенном node:test, без зависимостей
+python -m unittest discover -s test -p "test_*.py"    # тесты Python-версии и сверка с JS (нужен Node)
 ```
 
 ## Лицензия
