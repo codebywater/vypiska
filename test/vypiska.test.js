@@ -150,3 +150,8 @@ test("копейки без нуля: «-,01» из выписки Сбера", 
   assert.equal(V.parseAmount("-,01"), -0.01);
   assert.equal(V.parseAmount(",5"), 0.5);
 });
+
+test("«Детали операции» — описание", () => {
+  const r = V.parse("Дата;Сумма;Детали операции\n01.03.2026;-100;COFIX\n");
+  assert.equal(r.ops[0].description, "COFIX");
+});

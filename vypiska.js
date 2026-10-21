@@ -22,7 +22,7 @@
     status: ["статус", "status"],
     category: ["категория", "category"],
     mcc: ["mcc"],
-    description: ["назначение платежа", "назначение", "описание операции", "описание", "основание", "description", "merchant"],
+    description: ["назначение платежа", "назначение", "описание операции", "детали операции", "описание", "основание", "description", "merchant"],
     counterparty: ["плательщик", "получатель", "контрагент", "отправитель", "наименование контрагента", "payer", "payee"],
   };
   const ORDER = ["date", "credit", "debit", "amount", "currency", "status", "category", "mcc", "description", "counterparty"];

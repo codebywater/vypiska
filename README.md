@@ -78,7 +78,7 @@ npm install github:codebywater/vypiska
 ```
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/codebywater/vypiska@v1.0.1/vypiska.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/codebywater/vypiska@v1.0.2/vypiska.js"></script>
 ```
 
 ## Разработка
