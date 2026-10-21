@@ -1,6 +1,6 @@
 {
   "name": "vypiska",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Разбор CSV-выписок российских банков в единый список операций",
   "main": "vypiska.js",
   "files": ["vypiska.js"],

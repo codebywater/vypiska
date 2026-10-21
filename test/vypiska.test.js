@@ -129,3 +129,24 @@ test("копия для страницы совпадает с библиоте�
   const root = path.join(__dirname, "..");
   assert.equal(fs.readFileSync(path.join(root, "docs/vypiska.js"), "utf8"), fs.readFileSync(path.join(root, "vypiska.js"), "utf8"));
 });
+
+test("остаток и баланс в валюте счёта — не сумма операции", () => {
+  const r = V.parse("Дата операции;Остаток в валюте счета;Сумма в валюте счета;Описание\n01.03.2026;10 000,00;-500,00;Кофе\n");
+  assert.equal(r.columns.amount, "Сумма в валюте счета");
+  assert.deepEqual(r.ops.map((o) => o.amount), [-500]);
+  const only = V.parse("Дата;Входящий остаток;Сумма операции;Описание\n01.03.2026;10 000;-200;Чай\n");
+  assert.deepEqual(only.ops.map((o) => o.amount), [-200]);
+});
+
+test("рубли в разных записях не считаются валютой", () => {
+  for (const cur of ["RUB", "RUR", "руб.", "Рубли", "Российский рубль", "Российские рубли", "RUB (Российский рубль)", "643", ""]) {
+    const r = V.parse(`Дата;Сумма;Валюта;Описание\n01.03.2026;-100;${cur};X\n`);
+    assert.equal(r.ops.length, 1, cur);
+    assert.equal(r.ops[0].currency, "RUB", cur);
+  }
+});
+
+test("копейки без нуля: «-,01» из выписки Сбера", () => {
+  assert.equal(V.parseAmount("-,01"), -0.01);
+  assert.equal(V.parseAmount(",5"), 0.5);
+});

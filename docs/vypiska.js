@@ -17,7 +17,7 @@
     credit: ["по кредиту", "приход", "зачисление", "поступление", "кредит", "credit"],
     debit: ["по дебету", "расход", "списание", "дебет", "debit"],
     // Сначала сумма в валюте счёта: у Т-Банка это «Сумма платежа», у ВТБ — «Сумма пересчитанная в валюту счета».
-    amount: ["сумма платежа", "в валюте счета", "в валюте счёта", "в валюту счета", "в валюту счёта", "сумма операции", "сумма", "amount"],
+    amount: ["сумма платежа", "сумма в валюте сч", "сумма пересчитанная в валют", "сумма операции", "сумма", "amount"],
     currency: ["валюта платежа", "валюта счета", "валюта счёта", "валюта операции", "валюта", "currency"],
     status: ["статус", "status"],
     category: ["категория", "category"],
@@ -29,9 +29,12 @@
   const MONEY_KEYS = new Set(["credit", "debit", "amount"]);
   // «Счет Кредит», «ИНН», «Банк» — это не суммы, даже если в названии есть «кредит».
   const NOT_MONEY_HEADER = /сч[её]т|инн|бик|банк|наименован|кэшб[эе]к|бонус|cashback/;
+  // Остаток и баланс — не сумма операции, даже если «в валюте счёта».
+  const BALANCE_HEADER = /остат|баланс|сальдо|лимит|balance/;
   const MONEY_HEADER = /сумм|оборот/;
   const FAILED = /отклон|failed|declined|отмен|cancel|ошибк/i;
-  const RUB = /^(rub|rur|₽|руб\.?|рубль|российский рубль|643|810)?$/i;
+  // «RUB», «Рубли», «Российский рубль (RUB)», код 643 или старый 810 — всё это рубли.
+  const RUB = /^$|^(rub|rur|₽|руб|рубл|российск|643|810)/i;
   const DELIMITERS = [";", ",", "\t"];
 
   /*
@@ -66,7 +69,8 @@
     const lower = header.map((h) => h.toLowerCase().replace(/\s+/g, " ").replace(/^['"]|['"]$/g, ""));
     const cols = {};
     const used = new Set();
-    const fits = (key, h) => !MONEY_KEYS.has(key) || !NOT_MONEY_HEADER.test(h) || MONEY_HEADER.test(h) && !/кэшб[эе]к|бонус/.test(h);
+    const fits = (key, h) => !MONEY_KEYS.has(key) ||
+      !BALANCE_HEADER.test(h) && (!NOT_MONEY_HEADER.test(h) || MONEY_HEADER.test(h) && !/кэшб[эе]к|бонус/.test(h));
     for (const key of ORDER) {
       for (const kw of HEADERS[key]) {
         const idx = lower.findIndex((h, i) => !used.has(i) && (key === "mcc" ? h === kw : h.includes(kw)) && fits(key, h));
@@ -76,6 +80,7 @@
     // Сумма уже в валюте счёта — значит «Валюта операции» к ней не относится.
     if (cols.currency !== undefined && cols.amount !== undefined &&
         /платеж|в валют[еу] сч/.test(lower[cols.amount]) && /операци/.test(lower[cols.currency])) delete cols.currency;
+    if (cols.currency !== undefined && BALANCE_HEADER.test(lower[cols.currency])) delete cols.currency;
     return cols;
   }
 
@@ -112,7 +117,7 @@
     } else if ((t.match(/,/g) || []).length > 1) t = t.replace(/,/g, "");
     else if ((t.match(/\./g) || []).length > 1) t = t.replace(/\./g, "");
     else t = t.replace(",", ".");
-    if (!/^[+-]?\d+(\.\d+)?$/.test(t)) return null;
+    if (!/^[+-]?(\d+(\.\d+)?|\.\d+)$/.test(t)) return null;   // Сбер пишет копейки как «-,01»
     if (t.replace(/^[+-]/, "").split(".")[0].length >= 15) return null;
     const n = Number(t);
     return neg ? -Math.abs(n) : n;
