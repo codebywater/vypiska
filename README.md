@@ -69,6 +69,11 @@ const { ops, stats, files } = Vypiska.parseMany([sberText, tbankText]);   // ops
 | `decode(bytes)` | `Uint8Array`/`Buffer` → текст в правильной кодировке |
 | `parseAmount(s)`, `parseDate(s, order)` | отдельные разборщики сумм и дат |
 
+## Кто использует
+
+- [nalog-helper](https://github.com/codebywater/nalog-helper) — налоги ИП и самозанятых по выписке;
+- [money-wrapped](https://github.com/codebywater/money-wrapped) — итоги года по выписке в стиле Wrapped.
+
 ## Установка
 
 Библиотека — один файл [vypiska.js](vypiska.js). Скопируйте его в проект или подключите:
