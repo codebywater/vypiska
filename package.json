@@ -1,0 +1,11 @@
+{
+  "name": "vypiska",
+  "version": "1.0.0",
+  "description": "Разбор CSV-выписок российских банков в единый список операций",
+  "main": "vypiska.js",
+  "files": ["vypiska.js"],
+  "license": "MIT",
+  "repository": "github:codebywater/vypiska",
+  "keywords": ["bank-statement", "csv", "russia", "sberbank", "tinkoff", "t-bank", "alfa-bank", "vtb", "parser", "выписка"],
+  "scripts": { "test": "node --test test/*.test.js" }
+}

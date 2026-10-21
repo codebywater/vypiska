@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Страница не может ничего отправить в сеть: запросы запрещены политикой безопасности. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="light dark">
+<title>vypiska</title>
+<meta name="description" content="Проверьте, как библиотека vypiska разбирает выписку вашего банка. Работает в браузере, файл никуда не отправляется.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%84%3C/text%3E%3C/svg%3E">
+<style>
+:root {
+  --bg: #f7f7f4; --surface: #fff; --surface-2: #efefeb; --line: #e3e3de; --text: #161614; --muted: #5c5c55;
+  --accent: #2f45c8; --on-accent: #fff; --success: #146c43; --success-soft: #e6f4ec; --error: #b42318; --error-soft: #fdecea;
+  --plus: #146c43; --minus: #b42318;
+  --font: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121311; --surface: #1b1c1a; --surface-2: #242522; --line: #2d2e2b; --text: #ecece8; --muted: #a3a39c;
+    --accent: #9aa8ff; --on-accent: #121311; --success: #6fd3a0; --success-soft: #16271e; --error: #ff9b91; --error-soft: #341c1a;
+    --plus: #6fd3a0; --minus: #ff9b91;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.55 var(--font); }
+.wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px 48px; }
+.nav { display: flex; justify-content: space-between; align-items: center; padding: 24px 0; }
+.nav b { font-family: var(--mono); }
+.nav a { color: var(--muted); font-size: 14px; }
+h1 { font-size: clamp(30px, 5vw, 44px); line-height: 1.1; letter-spacing: -.03em; margin: 24px 0 12px; }
+.lead { color: var(--muted); font-size: 18px; max-width: 680px; margin: 0; }
+.banks { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 0; padding: 0; list-style: none; }
+.banks li { padding: 4px 10px; border-radius: 99px; background: var(--surface-2); font-size: 14px; }
+.drop { display: block; margin: 28px 0 8px; padding: 32px 20px; border: 1.5px dashed var(--line); border-radius: 18px; background: var(--surface); text-align: center; }
+.drop:hover, .drop--over { border-color: var(--accent); }
+.drop strong { display: block; font-size: 19px; }
+.hint { color: var(--muted); font-size: 14px; }
+.privacy { color: var(--success); font-size: 14px; margin: 0; }
+.btn { font: 600 15px/1 var(--font); border-radius: 10px; padding: 12px 18px; border: 1px solid var(--line); background: var(--surface); color: var(--text); cursor: pointer; margin-top: 16px; }
+.btn--primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn:hover { filter: brightness(1.05); }
+.btn:focus-visible, .drop:focus-within { outline: 2px solid var(--accent); outline-offset: 3px; }
+.error { padding: 12px 14px; border-radius: 10px; background: var(--error-soft); color: var(--error); }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 24px 0; }
+.stat { padding: 14px 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); }
+.stat b { display: block; font-size: 24px; font-variant-numeric: tabular-nums; }
+.stat span { color: var(--muted); font-size: 13px; }
+h2 { font-size: 22px; margin: 32px 0 10px; }
+.cols { font-family: var(--mono); font-size: 13px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; margin: 0; overflow-x: auto; }
+.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td.desc { white-space: normal; min-width: 220px; }
+th { color: var(--muted); font-weight: 500; background: var(--surface-2); }
+td.num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.plus { color: var(--plus); } .minus { color: var(--minus); }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+footer { margin-top: 48px; color: var(--muted); font-size: 14px; }
+footer a { color: inherit; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="nav"><b>📄 vypiska</b><a href="https://github.com/codebywater/vypiska" rel="noopener">GitHub</a></header>
+  <h1>Как vypiska понимает вашу выписку</h1>
+  <p class="lead">Открытая JS-библиотека разбирает CSV-выписки российских банков в единый список операций. Проверьте на своём файле: какие колонки найдены, какие строки пропущены и почему.</p>
+  <ul class="banks"><li>Сбербанк</li><li>Т-Банк</li><li>Альфа-Банк</li><li>ВТБ</li><li>Точка и выписки 1С</li><li>любой CSV с датой и суммой</li></ul>
+
+  <label class="drop" id="drop">
+    <strong>Перетащите CSV-выписку сюда</strong>
+    <span class="hint">UTF-8 или Windows-1251, разделитель «;», «,» или табуляция</span>
+    <input type="file" id="file" accept=".csv,.txt,text/csv" hidden>
+    <span class="actions" style="justify-content:center">
+      <button type="button" class="btn btn--primary" id="pick">Выбрать файл</button>
+    </span>
+  </label>
+  <p class="privacy">🔒 Файл не покидает браузер: странице запрещены сетевые запросы.</p>
+  <div class="error" id="error" role="alert" hidden></div>
+
+  <section id="result" hidden aria-live="polite">
+    <div class="stats" id="stats"></div>
+    <h2>Найденные колонки</h2>
+    <pre class="cols" id="cols"></pre>
+    <h2>Операции</h2>
+    <div class="actions"><button type="button" class="btn" id="json">Скачать JSON</button></div>
+    <div class="table-wrap" style="margin-top:12px">
+      <table><thead><tr><th>Дата</th><th>Время</th><th style="text-align:right">Сумма</th><th>Описание</th><th>Контрагент</th><th>Категория</th><th>MCC</th></tr></thead><tbody id="ops"></tbody></table>
+    </div>
+  </section>
+
+  <footer>MIT · <a href="https://github.com/codebywater/vypiska" rel="noopener">исходный код</a> · от автора <a href="https://codebywater.github.io/nalog-helper/" rel="noopener">nalog-helper</a> и <a href="https://codebywater.github.io/money-wrapped/" rel="noopener">money-wrapped</a></footer>
+</div>
+<script src="vypiska.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
