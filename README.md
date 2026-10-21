@@ -104,6 +104,7 @@ print(result["columns"])
 
 - [nalog-helper](https://github.com/codebywater/nalog-helper) — налоги ИП и самозанятых по выписке;
 - [money-wrapped](https://github.com/codebywater/money-wrapped) — итоги года по выписке в стиле Wrapped.
+- [subscription-hunter](https://github.com/codebywater/subscription-hunter) — забытые подписки в выписке; использует обе версии: Python в скрипте и JavaScript на странице.
 
 ## Установка
 
